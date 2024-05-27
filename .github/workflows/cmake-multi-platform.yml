@@ -1,0 +1,75 @@
+#此starter workflow适用于在多个平台上运行的CMake项目。如果您只需要一个平台，则有一个不同的starter workflow。
+#参见:https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+名字: 多平台上的 CMake
+
+在:
+推:
+分支: [ "main" ]
+query为空pull_request:
+分支: [ "main" ]
+
+工作:
+建筑:
+    runs-on: ${{ matrix.os }}
+
+战略:
+      #Set fail-fast为false，以确保为所有矩阵组合提供反馈。当工作流稳定时，考虑将其更改为true。
+      fail-fast: 虚假的
+
+      #建立一个矩阵以运行以下3个配置：
+      #1。<Windows，Release，默认runner映像上最新的MSVC编译器工具链，默认生成器>
+      #2。<Linux，Release，默认runner映像上的最新GCC编译器工具链，默认生成器>
+      #3。<Linux，Release，default generator上的最新Clang编译器工具链
+      #
+      #添加更多的构建类型（Release、Debug、RelWithDebInfo等）自定义build_type列表。
+矩阵:
+操作系统: [ubuntu-latest, windows-latest]
+        build_type: [释放]
+        c_compiler: [海湾合作委员会,叮当作响,耦合线（cl）]
+包括:
+          - 操作系统: windows-latest
+            c_compiler: 耦合线（cl）
+            cpp_compiler: 耦合线（cl）
+          - 操作系统: ubuntu-latest
+            c_compiler: 海湾合作委员会
+            cpp_compiler: g++
+          - 操作系统: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+        exclude:
+叮当作响
+铛铛++
+windows-最新
+海湾合作委员会
+windows-最新
+叮当作响
+
+#在“BUILD”子目录中配置CMAKE。只有在使用单个配置生成器（如MAKE）时，才需要使用'CMAKE_BUILD_typecom。
+ubuntu-最新
+
+耦合线（cl）
+actions/checkout@v4
+设置可重用字符串
+query为空
+跑
+cmake -B ${{ steps.strings.outputs.build-output-dir }}
+
+弦
+猛敲
+配置CMake
+echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT": >
+cmake -B ${{ steps.strings.outputs.build-output-dir }}
+-DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+-DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+-新币{{github.workspace}}
+
+-名称：Build
+#用给定的配置构建您的程序。请注意，-config是必需的，因为默认Windows生成器是多配置生成器（Visual Studio generator）。
+run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+-名称：Test
+工作目录：${{steps.strings.outputs.build-output-dir}
+#执行由CMake配置定义的测试。请注意-build-config是必需的，因为默认Windows生成器是多配置生成器（Visual Studio generator）。
+#参见https://cmake.org/cmake/help/rest/manual/ctest.1.html了解更多细节
+run: ctest --build-config ${{ matrix.build_type }}
